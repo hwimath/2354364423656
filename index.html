@@ -106,15 +106,15 @@
   </div>
   
   <div id="questionContainer" class="question-box">
-    <!-- 문제/선택지를 표시할 영역 -->
+    <!-- 문제 및 보기가 표시되는 영역 -->
   </div>
   
-  <!-- 오답시 정답 표시 -->
+  <!-- 피드백 영역 (정답/오답 확인 후 "다음문제" 버튼 표시) -->
   <div id="feedback" class="hidden"></div>
   
 </div>
 
-<!-- 게임 끝난 후 점수 전송 화면 -->
+<!-- 게임 종료 후 점수 전송 화면 -->
 <div id="endScreen" class="hidden">
   <h2>게임 종료</h2>
   <p>최종 점수: <span id="finalScore"></span></p>
@@ -124,407 +124,159 @@
 
 <script>
 // ======================= 문제 데이터 =======================
-// 아래는 '등차수열' 관련 75문항이며, 조건을 간략히 포함하고,
-// 각 문제를 독립적으로 풀 수 있도록 4지 선다로 구성했습니다.
-// 문제 순서는 임의(무작위)로 배치해두고, 실제 출제 시에도 다시 무작위 섞기를 합니다.
-//
-// 각 항목의 구조:
-// {
-//   question: "문제 본문 (조건 포함)",
-//   choices: ["보기1","보기2","보기3","보기4"],
-//   correct: 0-based index of correct answer
-// }
-
+// 중고등학생이 풀기에 적합한 30문항의 등차수열 문제입니다.
 const problemsData = [
   {
     question: "등차수열의 항이 2에서 시작해 3씩 증가하여 41이 마지막 항이 될 때, 모든 항의 합은?",
     choices: ["294", "301", "314", "328"],
-    correct: 1  // 301
+    correct: 1
   },
   {
     question: "등차수열의 항이 15에서 시작하고 공차가 -3이며, -42가 마지막 항이 될 때, 모든 항의 합은?",
     choices: ["-270", "-252", "-240", "-210"],
-    correct: 0 // -270
+    correct: 0
   },
   {
     question: "등차수열의 항이 33에서 시작하고 공차가 -3이며, 3이 마지막 항이 될 때, 모든 항의 합은?",
     choices: ["195","198","201","210"],
-    correct: 1 // 198
+    correct: 1
   },
   {
     question: "1 이상 100 이하 자연수 중 2의 배수만을 더한 합은?",
     choices: ["2450","2500","2550","2600"],
-    correct: 2 // 2550
+    correct: 2
   },
   {
     question: "1 이상 100 이하 자연수 중 3의 배수만을 더한 합은?",
     choices: ["1530","1683","1803","1980"],
-    correct: 1 //1683
+    correct: 1
   },
   {
     question: "1 이상 100 이하 자연수 중 5의 배수만을 더한 합은?",
     choices: ["1050","1000","950","1100"],
-    correct: 0 //1050
+    correct: 0
   },
   {
     question: "첫째항 -8, 제13항 -6인 등차수열의 합 \\(S_{13}\\)은?",
     choices: ["-78","-84","-91","-104"],
-    correct: 2 // -91
+    correct: 2
   },
   {
     question: "첫째항 -3, 제8항 12인 등차수열의 합 \\(S_{8}\\)은?",
     choices: ["32","34","36","38"],
-    correct: 2 //36
+    correct: 2
   },
   {
     question: "첫째항 1, 제50항 99인 등차수열의 합 \\(S_{50}\\)은?",
     choices: ["2400","2450","2500","2600"],
-    correct: 2 //2500
+    correct: 2
   },
   {
     question: "첫째항 2, 제15항 18인 등차수열의 합 \\(S_{15}\\)은?",
     choices: ["140","145","150","160"],
-    correct: 2 //150
+    correct: 2
   },
   {
     question: "첫째항 3, 제10항 17인 등차수열의 합 \\(S_{10}\\)은?",
     choices: ["90","95","100","105"],
-    correct: 2 //100
+    correct: 2
   },
   {
-    question: "첫째항 15, 공차 -3, 12항까지의 합 \\(S_{12}\\)는?",
+    question: "첫째항 15, 공차 -3인 등차수열의 12항까지의 합 \\(S_{12}\\)는?",
     choices: ["-18","-12","-6","0"],
-    correct: 0 //-18
+    correct: 0
   },
   {
-    question: "첫째항 4, 공차 3, 12항까지의 합 \\(S_{12}\\)는?",
+    question: "첫째항 4, 공차 3인 등차수열의 12항까지의 합 \\(S_{12}\\)는?",
     choices: ["234","240","246","252"],
-    correct: 2 //246
+    correct: 2
   },
   {
-    question: "첫째항 2, 공차 3, 10항까지의 합 \\(S_{10}\\)는?",
+    question: "첫째항 2, 공차 3인 등차수열의 10항까지의 합 \\(S_{10}\\)는?",
     choices: ["150","155","160","165"],
-    correct: 1 //155
+    correct: 1
   },
   {
-    question: "첫째항 3, 공차 2, 10항까지의 합 \\(S_{10}\\)는?",
+    question: "첫째항 3, 공차 2인 등차수열의 10항까지의 합 \\(S_{10}\\)는?",
     choices: ["110","115","120","130"],
-    correct: 2 //120
+    correct: 2
   },
   {
-    question: "첫째항 2, 공차 2, 30항까지의 합 \\(S_{30}\\)는?",
+    question: "첫째항 2, 공차 2인 등차수열의 30항까지의 합 \\(S_{30}\\)는?",
     choices: ["900","910","930","950"],
-    correct: 2 //930
+    correct: 2
   },
   {
-    question: "첫째항 4, 공차 -2, 30항까지의 합 \\(S_{30}\\)는?",
+    question: "첫째항 4, 공차 -2인 등차수열의 30항까지의 합 \\(S_{30}\\)는?",
     choices: ["-750","-720","-700","-660"],
-    correct: 0 //-750
+    correct: 0
   },
   {
-    question: "첫째항 3, 공차 5, 10항까지의 합 \\(S_{10}\\)는?",
+    question: "첫째항 3, 공차 5인 등차수열의 10항까지의 합 \\(S_{10}\\)는?",
     choices: ["250","255","260","265"],
-    correct: 1 //255
-  },
-  {
-    question: "다음 등차수열 \\(-33, -29, -25, -21,\\dots\\)의 부분합 \\(S_n\\)이 최솟값을 갖는 \\(n\\)에서의 값은?",
-    choices: ["-152","-153","-154","-155"],
-    correct: 1 //-153
-  },
-  {
-    question: "등차수열에서 \\(a_3=-25\\), \\(a_7=-17\\)일 때, 부분합 \\(S_n\\)이 최솟값을 갖는 곳에서의 값은?",
-    choices: ["-220","-222","-225","-228"],
-    correct: 2 //-225
-  },
-  {
-    question: "첫째항 -30, 공차 4인 등차수열의 부분합 \\(S_n\\)이 최솟값을 갖는 n에서의 값은?",
-    choices: ["-126","-128","-130","-132"],
-    correct: 1 //-128
-  },
-  {
-    question: "첫째항 -37, 공차 5인 등차수열의 부분합이 최솟값을 갖는 곳에서의 값은?",
-    choices: ["-154","-155","-156","-158"],
-    correct: 2 //-156
-  },
-  {
-    question: "등차수열에서 \\(a_6=-25, a_{17}=8\\). 부분합 \\(S_n\\)이 최소가 되는 곳에서의 값은?",
-    choices: ["-285","-286","-287","-288"],
-    correct: 2 //-287
-  },
-  {
-    question: "첫째항이 13, 공차가 -2인 등차수열에서 부분합 \\(S_n\\)이 최대가 되는 정수 \\(n\\)에서의 값은?",
-    choices: ["47","48","49","50"],
-    correct: 2 //49
-  },
-  {
-    question: "등차수열에서 \\(a_3=23, a_6=14\\)일 때, 부분합 \\(S_n\\)이 최대가 되는 정수 n에서의 값은?",
-    choices: ["153","154","155","156"],
-    correct: 2 //155
-  },
-  {
-    question: "등차수열에서 \\(a_3=20, a_{10}=-1\\)일 때, 부분합 \\(S_n\\)이 최대가 되는 정수 n에서의 값은?",
-    choices: ["124","125","126","127"],
-    correct: 2 //126
-  },
-  {
-    question: "첫째항 50, 공차 -3인 등차수열에서 부분합이 최대가 되는 정수 n에서의 \\(S_n\\)은?",
-    choices: ["440","441","442","443"],
-    correct: 2 //442
-  },
-  {
-    question: "첫째항 35, 공차 -4인 등차수열의 부분합이 최대가 되는 정수 n에서의 \\(S_n\\)은?",
-    choices: ["169","170","171","172"],
-    correct: 2 //171
-  },
-  {
-    question: "첫째항 15, 공차 -2인 등차수열의 부분합이 최대가 되는 정수 n과 그때의 값은?",
-    choices: ["n=7, S_7=63","n=8, S_8=64","n=9, S_9=63","n=10, S_{10}=60"],
-    correct: 1 // n=8,64
-  },
-  {
-    question: "첫째항 75, 공차 -8인 등차수열의 부분합이 최대가 되는 정수 n에서의 \\(S_n\\)은?",
-    choices: ["388","389","390","392"],
-    correct: 2 //390
+    correct: 1
   },
   {
     question: "첫째항 23, \\(S_{15}=-75\\)일 때, 등차수열의 공차 \\(d\\)는?",
     choices: ["-4","-3","-5","-6"],
-    correct: 0 //-4
+    correct: 0
   },
   {
     question: "첫째항 17, \\(S_9=81\\)인 등차수열의 공차 \\(d\\)는?",
     choices: ["-2","-3","-4","2"],
-    correct: 0 //-2
+    correct: 0
   },
   {
     question: "첫째항 2, \\(S_{12}=156\\)일 때 등차수열의 공차 \\(d\\)는?",
     choices: ["1","2","3","4"],
-    correct: 1 //2
+    correct: 1
   },
   {
     question: "첫째항 30, \\(S_{10}=210\\)일 때 등차수열의 공차 \\(d\\)는?",
     choices: ["-2","-1","2","3"],
-    correct: 0 //-2
+    correct: 0
   },
   {
     question: "첫째항 3, \\(S_8=164\\)일 때 등차수열의 공차 \\(d\\)는?",
     choices: ["4","5","6","7"],
-    correct: 1 //5
+    correct: 1
   },
   {
     question: "첫째항 -3, \\(S_{10}=285\\)일 때 등차수열의 공차 \\(d\\)는?",
     choices: ["5","6","7","8"],
-    correct: 2 //7
+    correct: 2
   },
   {
     question: "첫째항 5, \\(S_9=81\\)인 등차수열에서 제9항 \\(a_9\\)은?",
     choices: ["11","12","13","14"],
-    correct: 2 //13
+    correct: 2
   },
   {
     question: "첫째항 42, \\(S_{21}=-63\\)인 등차수열에서 제21항 \\(a_{21}\\)은?",
     choices: ["-46","-48","-50","-52"],
-    correct: 1 //-48
+    correct: 1
   },
   {
     question: "첫째항 23, \\(S_{16}=56\\)인 등차수열에서 제16항 \\(a_{16}\\)은?",
     choices: ["-16","-14","-12","-10"],
-    correct: 0 //-16
+    correct: 0
   },
   {
     question: "첫째항 7, \\(S_{14}=196\\)인 등차수열에서 제14항 \\(a_{14}\\)은?",
     choices: ["19","20","21","22"],
-    correct: 2 //21
-  },
-  {
-    question: "\\(S_8=56\\), \\(S_{18}=-54\\)인 등차수열에서 \\(S_{21}\\)은?",
-    choices: ["-120","-124","-126","-128"],
-    correct: 2 //-126
-  },
-  {
-    question: "\\(S_{10}=50\\), \\(S_{20}=200\\)인 등차수열에서 \\(S_{30}\\)은?",
-    choices: ["450","460","480","500"],
-    correct: 0 //450
-  },
-  {
-    question: "\\(S_5=-5\\), \\(S_{10}=65\\)인 등차수열에서 \\(S_{15}\\)는?",
-    choices: ["200","205","210","215"],
-    correct: 2 //210
+    correct: 2
   },
   {
     question: "등차수열에서 첫째항부터 10항까지의 합이 140, 20항까지의 합이 480일 때, 26항까지의 합은?",
     choices: ["720","760","780","800"],
-    correct: 2 //780
+    correct: 2
   },
   {
     question: "등차수열에서 첫째항부터 10항까지의 합이 130이고, 11항부터 20항까지의 합이 330일 때, 21항부터 30항까지의 합은?",
     choices: ["510","520","530","540"],
-    correct: 2 //530
-  },
-
-  // ---- 아래는 이미 포함된 1~75 총합 75문제 맞춰야 함 ----
-  // 그러나 위에 이미 44개가 들어갔음. 아래 31개를 추가.
-
-  {
-    question: "첫째항 -3, 제8항 12인 등차수열에서 합 \\(S_8\\)은 얼마인가? (다른 형식 중복문)",
-    choices: ["32","34","36","38"],
-    correct: 2 // 36 (중복문, OK)
-  },
-  {
-    question: "첫째항이 1이고 제50항이 99인 등차수열의 합 \\(S_{50}\\)은?",
-    choices: ["2400","2450","2500","2600"],
-    correct: 2 // 2500 (중복문, OK)
-  },
-  {
-    question: "첫째항이 3이고 제10항이 17인 등차수열에서 \\(S_{10}\\)은?",
-    choices: ["90","95","100","105"],
     correct: 2
-  },
-  {
-    question: "첫째항 2, 공차가 3이고 10항까지의 합은?",
-    choices: ["150","155","160","165"],
-    correct: 1
-  },
-  {
-    question: "공차가 2인 등차수열에서 첫 항은 2, 30항까지의 합은?",
-    choices: ["900","910","930","950"],
-    correct: 2
-  },
-  {
-    question: "첫째항 4, 공차 -2인 등차수열, 30항까지의 합은?",
-    choices: ["-750","-720","-700","-660"],
-    correct: 0
-  },
-  {
-    question: "첫 항이 3, 공차 5인 등차수열에서 10항까지의 합 \\(S_{10}\\)은?",
-    choices: ["250","255","260","265"],
-    correct: 1
-  },
-  {
-    question: "등차수열 \\(-33, -29, -25, -21, ...\\) 의 부분합 \\(S_n\\), 최솟값은?",
-    choices: ["-152","-153","-154","-155"],
-    correct: 1
-  },
-  {
-    question: "등차수열에서 \\(a_3=-25, a_7=-17\\). 부분합 \\(S_n\\) 최솟값은?",
-    choices: ["-220","-222","-225","-228"],
-    correct: 2
-  },
-  {
-    question: "첫째항이 -8, 제13항 -6 등차수열, 합 \\(S_{13}\\)은?",
-    choices: ["-78","-84","-91","-104"],
-    correct: 2
-  },
-  {
-    question: "첫째항 33, 공차 -3, 마지막 항 3일 때 등차수열의 합은?",
-    choices: ["195","198","201","210"],
-    correct: 1
-  },
-  {
-    question: "1 이상 100 이하 자연수 중 2의 배수의 합은?",
-    choices: ["2450","2500","2550","2600"],
-    correct: 2
-  },
-  {
-    question: "첫째항 15, 공차 -3, 마지막 항이 -42일 때, 모든 항의 합은?",
-    choices: ["-270","-252","-240","-210"],
-    correct: 0
-  },
-  {
-    question: "첫째항 2, 제15항이 18인 등차수열, 합 \\(S_{15}\\)은?",
-    choices: ["140","145","150","160"],
-    correct: 2
-  },
-  {
-    question: "첫 항 3, 제10항 17인 등차수열, 합은?",
-    choices: ["90","95","100","105"],
-    correct: 2
-  },
-  {
-    question: "1 이상 100 이하 자연수 중 3의 배수의 합은?",
-    choices: ["1530","1683","1803","1980"],
-    correct: 1
-  },
-  {
-    question: "1 이상 100 이하 자연수 중 5의 배수만 골라 더한 합은?",
-    choices: ["1050","1000","950","1100"],
-    correct: 0
-  },
-  {
-    question: "첫째항 -3, \\(S_{10}=285\\). 공차 \\(d\\)는?",
-    choices: ["5","6","7","8"],
-    correct: 2
-  },
-  {
-    question: "등차수열 첫 항 7, \\(S_{14}=196\\). 제14항 \\(a_{14}\\)는?",
-    choices: ["19","20","21","22"],
-    correct: 2
-  },
-  {
-    question: "공차 -2인 등차수열, 첫 항 4, 30항까지의 합은?",
-    choices: ["-750","-720","-700","-660"],
-    correct: 0
-  },
-  {
-    question: "첫 항 50, 공차 -3인 등차수열, 부분합 최댓값은?",
-    choices: ["440","441","442","443"],
-    correct: 2
-  },
-  {
-    question: "첫 항 35, 공차 -4인 등차수열, 부분합 최댓값은?",
-    choices: ["169","170","171","172"],
-    correct: 2
-  },
-  {
-    question: "첫 항 15, 공차 -2인 등차수열에서 부분합 최댓값은?",
-    choices: ["n=7, 63", "n=8, 64","n=9, 63","n=10, 60"],
-    correct: 1
-  },
-  {
-    question: "첫 항이 75, 공차 -8인 등차수열, 부분합 최대는?",
-    choices: ["388","389","390","392"],
-    correct: 2
-  },
-  {
-    question: "첫 항 23, \\(S_{15}=-75\\). 공차 \\(d\\)는?",
-    choices: ["-4","-3","-5","-6"],
-    correct: 0
-  },
-  {
-    question: "첫 항 17, \\(S_9=81\\). 공차 \\(d\\)는?",
-    choices: ["-2","-3","-4","2"],
-    correct: 0
-  },
-  {
-    question: "\\(S_{10}=50, S_{20}=200\\). 등차수열에서 \\(S_{30}\\)는?",
-    choices: ["450","460","480","500"],
-    correct: 0
-  },
-  {
-    question: "\\(S_5=-5, S_{10}=65\\). 등차수열에서 \\(S_{15}\\)는?",
-    choices: ["200","205","210","215"],
-    correct: 2
-  },
-  {
-    question: "첫 항 2, \\(S_{12}=156\\). 공차 \\(d\\)는?",
-    choices: ["1","2","3","4"],
-    correct: 1
-  },
-  {
-    question: "첫 항 30, \\(S_{10}=210\\). 공차 \\(d\\)는?",
-    choices: ["-2","-1","2","3"],
-    correct: 0
-  },
-  {
-    question: "첫 항 3, \\(S_8=164\\). 공차 \\(d\\)는?",
-    choices: ["4","5","6","7"],
-    correct: 1
   }
 ];
-
-// (중복을 일부러 남겨서 전체 75문항을 구성)
-
-// ======================= 전역 변수 =======================
 
 let player = "";
 let difficulty = "";
@@ -533,14 +285,13 @@ let pointPerQuestion = 0;      // 난이도별 점수
 let totalScore = 0;
 let lives = 3;
 let currentProblemIndex = 0;
-let usedProblems = [];     // 문제들 (랜덤 섞은 뒤 순서대로)
-let questionStartTime = 0; // 해당 문제 시작한 시점
-let totalElapsed = 0;      // 전체 게임 경과 시간(초)
-let timerInterval = null;  // 전체 시간/에너지바 갱신 타이머
-let currentEnergy = 100;   // 에너지바(%) 
-let energyInterval = null; // 문제별 카운트다운용
+let usedProblems = [];       // 문제들을 무작위로 섞은 배열
+let totalElapsed = 0;        // 전체 게임 경과 시간(초)
+let timerInterval = null;    // 전체 시간 갱신 타이머
+let currentEnergy = 100;     // 에너지바(백분율)
+let energyInterval = null;   // 문제별 타이머
 
-// ======================= 난이도 / 시작 =======================
+// 이름 입력 후 난이도 선택 화면으로 전환
 function goDifficulty(){
   const nameInput = document.getElementById("playerName");
   if(!nameInput.value){
@@ -552,6 +303,7 @@ function goDifficulty(){
   document.getElementById("difficultyScreen").classList.remove("hidden");
 }
 
+// 난이도 선택 및 게임 시작
 function startGame(diff){
   difficulty = diff;
   switch(difficulty){
@@ -568,127 +320,108 @@ function startGame(diff){
       pointPerQuestion = 13;
       break;
     case "하":
-      timeLimitPerQuestion = 0; // 무제한
+      timeLimitPerQuestion = 0; // 무제한 시간
       pointPerQuestion = 10;
       break;
   }
-
   document.getElementById("difficultyScreen").classList.add("hidden");
   document.getElementById("gameScreen").classList.remove("hidden");
-
-  // 문제 리스트 무작위 셔플
-  usedProblems = shuffleArray([...problemsData]); 
+  
+  // 문제 데이터를 무작위로 섞음
+  usedProblems = shuffleArray([...problemsData]);
   currentProblemIndex = 0;
   totalScore = 0;
   lives = 3;
   totalElapsed = 0;
-
+  
   document.getElementById("lives").textContent = lives;
   document.getElementById("score").textContent = totalScore;
   document.getElementById("elapsedTime").textContent = totalElapsed;
-
-  // 전체 시간 카운트 시작
-  if(timerInterval){
-    clearInterval(timerInterval);
-  }
+  
+  // 전체 진행 시간 타이머 시작
+  if(timerInterval) clearInterval(timerInterval);
   timerInterval = setInterval(()=>{
     totalElapsed++;
     document.getElementById("elapsedTime").textContent = totalElapsed;
   }, 1000);
-
-  // 첫 문제 표시
+  
   showProblem();
 }
 
-// ======================= 문제 표시 =======================
+// 문제 표시 (문제 선택 전에는 "다음문제" 버튼이 보이지 않음)
 function showProblem(){
-  if(lives<=0){
+  // 피드백 영역 초기화
+  document.getElementById("feedback").classList.add("hidden");
+  document.getElementById("feedback").innerHTML = "";
+  
+  if(lives <= 0){
     endGame();
     return;
   }
-
-  // 문제를 전부 소진했으면, 다시 무작위로 새로 채워 무한 반복
+  
+  // 모든 문제를 소진하면 다시 섞음 (무한 반복)
   if(currentProblemIndex >= usedProblems.length){
-    // 다시 섞어서 무한
     usedProblems = shuffleArray([...problemsData]);
     currentProblemIndex = 0;
   }
-
+  
   const p = usedProblems[currentProblemIndex];
   const container = document.getElementById("questionContainer");
-
-  // 문제+보기 표시
-  let html = "";
-  html += `<div><b>문제:</b> ${p.question}</div><br/>`;
-  // 보기 4개 섞기
+  
+  // 문제와 보기를 표시 (보기는 무작위 순서)
+  let html = `<div><b>문제:</b> ${p.question}</div><br/>`;
   const indices = [0,1,2,3];
   const shuffled = shuffleArray(indices);
-  // 정답 위치 파악을 위해
-  let correctChoiceOriginalIndex = p.correct;
-  // shuffled 안에서 correctChoiceOriginalIndex가 몇 번째에 있는지 찾아야 함.
-  // 그러나 간단히: answers[shuffled[i]]로 접근 + correct==shuffled[i].
-  for(let i=0;i<4;i++){
+  for(let i = 0; i < 4; i++){
     const choiceIdx = shuffled[i];
-    html += `<button class="answer-btn" onclick="checkAnswer(${choiceIdx},${p.correct})">
+    html += `<button class="answer-btn" onclick="checkAnswer(${choiceIdx}, ${p.correct})">
       \\(${p.choices[choiceIdx]}\\)
     </button><br/>`;
   }
   container.innerHTML = html;
-
-  // 오답/정답 피드백 숨김
-  document.getElementById("feedback").classList.add("hidden");
-
-  // 수식 렌더링
+  
   MathJax.typeset();
-
-  // 시간/에너지바 설정
-  if(timeLimitPerQuestion>0){
-    currentEnergy = 100; 
+  
+  // 시간 제한이 있으면 에너지바(타이머) 시작
+  if(timeLimitPerQuestion > 0){
+    currentEnergy = 100;
+    document.getElementById("energyBar").style.width = currentEnergy + "%";
     if(energyInterval) clearInterval(energyInterval);
     energyInterval = setInterval(()=>{
-      // timeLimitPerQuestion초 -> 100% 에너지
-      // 1초마다 (100 / timeLimitPerQuestion) 씩 감소
-      currentEnergy -= 100/timeLimitPerQuestion;
-      if(currentEnergy<0) currentEnergy=0;
-      document.getElementById("energyBar").style.width = currentEnergy+"%";
-
-      if(currentEnergy<=0){
-        // 시간 종료 -> 기회 1 감소, 다음 문제
+      currentEnergy -= 100 / timeLimitPerQuestion;
+      if(currentEnergy < 0) currentEnergy = 0;
+      document.getElementById("energyBar").style.width = currentEnergy + "%";
+      
+      if(currentEnergy <= 0){
         clearInterval(energyInterval);
         lives--;
         document.getElementById("lives").textContent = lives;
-        document.getElementById("feedback").classList.remove("hidden");
-        document.getElementById("feedback").innerHTML = 
-          `<span class="result-wrong">시간 초과! 기회 1 감소</span>`;
-        // 잠시 후 다음 문제
-        setTimeout(()=>{
-          if(lives>0){
-            currentProblemIndex++;
-            showProblem();
-          } else {
-            endGame();
-          }
-        }, 1000);
+        const fb = document.getElementById("feedback");
+        fb.classList.remove("hidden");
+        fb.innerHTML = `<span class="result-wrong">시간 초과! 기회 1 감소</span>`;
+        if(lives > 0){
+          fb.innerHTML += '<br/><button class="answer-btn" onclick="nextProblem()">다음문제</button>';
+        } else {
+          setTimeout(()=>{ endGame(); }, 1000);
+        }
       }
-
     }, 1000);
   } else {
-    // 하(무제한) 난이도인 경우 에너지바 풀로 채우고 감소 안 함
+    // 무제한 시간일 경우 에너지바 항상 100%
     document.getElementById("energyBar").style.width = "100%";
   }
 }
 
-// ======================= 정답 처리 =======================
+// 정답 처리 (답 선택 후에만 "다음문제" 버튼 활성)
 function checkAnswer(chosenIndex, correctIndex){
-  // 시간 카운트 정지
   if(energyInterval) clearInterval(energyInterval);
-
+  
   const p = usedProblems[currentProblemIndex];
-  let isCorrect = (chosenIndex === correctIndex);
-
   const fb = document.getElementById("feedback");
   fb.classList.remove("hidden");
-
+  
+  let isCorrect = (chosenIndex === correctIndex);
+  
   if(isCorrect){
     totalScore += pointPerQuestion;
     document.getElementById("score").textContent = totalScore;
@@ -696,66 +429,59 @@ function checkAnswer(chosenIndex, correctIndex){
   } else {
     lives--;
     document.getElementById("lives").textContent = lives;
-    // 정답 보기
     const ansText = `\\(${p.choices[correctIndex]}\\)`;
     fb.innerHTML = `<span class="result-wrong">오답! 정답: ${ansText}</span>`;
   }
-
-  // 수식 렌더링
+  
   MathJax.typeset();
-
-  if(lives<=0){
-    // 게임 종료
-    setTimeout(()=>{
-      endGame();
-    }, 1000);
+  
+  if(lives > 0){
+    // 정답 또는 오답 피드백이 나온 후에만 "다음문제" 버튼이 활성화됨
+    fb.innerHTML += '<br/><button class="answer-btn" onclick="nextProblem()">다음문제</button>';
   } else {
-    // 다음 문제
-    setTimeout(()=>{
-      currentProblemIndex++;
-      showProblem();
-    }, 1000);
+    setTimeout(()=>{ endGame(); }, 1000);
   }
 }
 
-// ======================= 게임 종료 =======================
+// "다음문제" 버튼 클릭 시 다음 문제 표시
+function nextProblem(){
+  currentProblemIndex++;
+  showProblem();
+}
+
+// 게임 종료 처리
 function endGame(){
-  // 타이머 중지
   if(timerInterval) clearInterval(timerInterval);
   if(energyInterval) clearInterval(energyInterval);
-
   document.getElementById("gameScreen").classList.add("hidden");
   document.getElementById("endScreen").classList.remove("hidden");
   document.getElementById("finalScore").textContent = totalScore;
 }
 
-// ======================= 점수 전송 =======================
+// 점수 전송
 function sendScore(){
   saveData("등차수열의 합", player, totalScore, totalElapsed);
 }
 
-// ======================= 유틸: 배열 셔플 =======================
+// 배열 셔플 (랜덤 순서 생성)
 function shuffleArray(arr){
   let newArr = arr.slice();
-  for(let i=newArr.length-1; i>0; i--){
-    const j=Math.floor(Math.random()*(i+1));
-    [newArr[i], newArr[j]]=[newArr[j], newArr[i]];
+  for(let i = newArr.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [newArr[i], newArr[j]] = [newArr[j], newArr[i]];
   }
   return newArr;
 }
 
-// ======================= 서버 전송 함수 =======================
-// (문제에서 제시한 코드를 그대로 사용하되, 백틱 문자열 주의해서 삽입)
+// 서버 전송 함수
 async function saveData(game, name, score, elapsedTime) {
   const FUNCTION_URL = "https://us-central1-record-f420d.cloudfunctions.net/report";
-
   const requestData = {
       game,
       name,
       score: parseInt(score, 10),
       elapsedTime: parseInt(elapsedTime, 10)
   };
-
   try {
       const response = await fetch(FUNCTION_URL, {
           method: 'POST',
@@ -764,9 +490,7 @@ async function saveData(game, name, score, elapsedTime) {
           },
           body: JSON.stringify(requestData)
       });
-
       const responseData = await response.json();
-
       if (response.ok) {
           document.getElementById('response').innerText = 
               `성공: ${JSON.stringify(responseData, null, 2)}`;
